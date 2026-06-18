@@ -30,11 +30,14 @@ import 'logger_json.dart' show prettyJson;
 /// - [elapsedMs] and [bodyBytes] are optional metadata shown on the status line.
 /// - [maxStringLen] caps long string values in both bodies (defaults to 100)
 ///   so base64 blobs don't flood the log; pass `null` to disable truncation.
+/// - [logHeader] toggles printing of request and response headers (defaults
+///   to true).
 String prettyResponse(
   http.Response response, {
   int? elapsedMs,
   int? bodyBytes,
   int? maxStringLen = 100,
+  bool logHeader = true,
 }) {
   final buf = StringBuffer();
 
@@ -42,7 +45,7 @@ String prettyResponse(
   final request = response.request;
   if (request != null) {
     buf.write('${request.method} ${request.url}');
-    if (request.headers.isNotEmpty) {
+    if (logHeader && request.headers.isNotEmpty) {
       buf.writeln();
       request.headers.forEach((k, v) {
         buf.writeln('  $k: $v');
@@ -66,7 +69,7 @@ String prettyResponse(
   if (meta.isNotEmpty) buf.write(' (${meta.join(', ')})');
 
   // Headers
-  if (response.headers.isNotEmpty) {
+  if (logHeader && response.headers.isNotEmpty) {
     buf.writeln();
     response.headers.forEach((k, v) {
       buf.writeln('  $k: $v');
@@ -89,14 +92,16 @@ extension LoggerHttp on Logger {
   /// Logs [message] at [Level.INFO], appending a formatted [response] on
   /// subsequent lines (status, headers, and pretty-printed body).
   ///
-  /// Optionally include [elapsedMs] and [bodyBytes] in the status line, and
-  /// cap long string values via [maxStringLen] (see [prettyResponse]).
+  /// Optionally include [elapsedMs] and [bodyBytes] in the status line, cap
+  /// long string values via [maxStringLen], and toggle headers via [logHeader]
+  /// (see [prettyResponse]).
   void infoResponse(
     String message,
     http.Response response, {
     int? elapsedMs,
     int? bodyBytes,
     int? maxStringLen = 100,
+    bool logHeader = true,
   }) =>
-      info('$message\n${prettyResponse(response, elapsedMs: elapsedMs, bodyBytes: bodyBytes, maxStringLen: maxStringLen)}');
+      info('$message\n${prettyResponse(response, elapsedMs: elapsedMs, bodyBytes: bodyBytes, maxStringLen: maxStringLen, logHeader: logHeader)}');
 }
