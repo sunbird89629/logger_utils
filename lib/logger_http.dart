@@ -55,36 +55,30 @@ String prettyResponse(
   // Request headers + body
   if (request != null) {
     if (logHeader && request.headers.isNotEmpty) {
-      buf.writeln();
       request.headers.forEach((k, v) {
-        buf.writeln('  $k: $v');
+        buf.writeln('$k: $v');
       });
     }
     // Only http.Request carries a readable body; streamed/multipart do not.
     if (request is http.Request && request.body.isNotEmpty) {
       buf.writeln();
-      buf.writeln();
       buf.write(prettyJson(request.body, maxStringLen: maxStringLen));
+      buf.writeln();
     }
-    buf.writeln();
-    buf.writeln();
   }
   // Headers
   if (logHeader && response.headers.isNotEmpty) {
-    buf.writeln();
     response.headers.forEach((k, v) {
-      buf.writeln('  $k: $v');
+      buf.writeln('$k: $v');
     });
   }
-
   // Body — non-empty only
   final body = response.body;
   if (body.isNotEmpty) {
     buf.writeln();
-    buf.writeln();
     buf.write(prettyJson(body, maxStringLen: maxStringLen));
+    buf.writeln();
   }
-
   return buf.toString();
 }
 

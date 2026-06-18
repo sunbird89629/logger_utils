@@ -23,6 +23,9 @@ void main() {
         bodyBytes: 11,
       );
 
+
+      print(out);
+
       expect(out, contains('POST https://example.com/api'));
       expect(out, contains('200 OK'));
       expect(out, contains('12ms'));
