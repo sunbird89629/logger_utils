@@ -88,12 +88,13 @@ String prettyResponse(
 ///
 /// [elapsedMs] and [bodyBytes] are appended in parentheses when present.
 String _statusLine(http.Response response, {int? elapsedMs, int? bodyBytes}) {
+  final line =
+      StringBuffer('${response.statusCode} ${response.reasonPhrase ?? ''}');
   final meta = <String>[];
-  meta.add('${response.statusCode}');
-  meta.add('${response.reasonPhrase ?? ''}');
   if (elapsedMs != null) meta.add('${elapsedMs}ms');
   if (bodyBytes != null) meta.add('$bodyBytes bytes');
-  return meta.join(' ');
+  if (meta.isNotEmpty) line.write(' (${meta.join(', ')})');
+  return line.toString();
 }
 
 /// Adds [infoResponse] for logging an HTTP response alongside a message.
