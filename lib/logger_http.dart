@@ -40,11 +40,16 @@ String prettyResponse(
   bool logHeader = true,
 }) {
   final buf = StringBuffer();
+  // Status line
+  final request=response.request;
+  if(request!=null){
+    buf.writeln('${request.method} ${request.url}');
+  }
+
+  buf.writeln(_statusLine(response, elapsedMs: elapsedMs, bodyBytes: bodyBytes));
 
   // Request line + headers + body
-  final request = response.request;
-  if (request != null) {
-    buf.write('${request.method} ${request.url}');
+  if ( request != null) {
     if (logHeader && request.headers.isNotEmpty) {
       buf.writeln();
       request.headers.forEach((k, v) {
@@ -60,14 +65,6 @@ String prettyResponse(
     buf.writeln();
     buf.writeln();
   }
-
-  // Status line
-  buf.write('${response.statusCode} ${response.reasonPhrase ?? ''}');
-  final meta = <String>[];
-  if (elapsedMs != null) meta.add('${elapsedMs}ms');
-  if (bodyBytes != null) meta.add('$bodyBytes bytes');
-  if (meta.isNotEmpty) buf.write(' (${meta.join(', ')})');
-
   // Headers
   if (logHeader && response.headers.isNotEmpty) {
     buf.writeln();
@@ -87,6 +84,18 @@ String prettyResponse(
   return buf.toString();
 }
 
+/// Builds the status line, e.g. `200 OK (123ms, 456 bytes)`.
+///
+/// [elapsedMs] and [bodyBytes] are appended in parentheses when present.
+String _statusLine(http.Response response, {int? elapsedMs, int? bodyBytes}) {
+  final meta = <String>[];
+  meta.add('${response.statusCode}');
+  meta.add('${response.reasonPhrase ?? ''}');
+  if (elapsedMs != null) meta.add('${elapsedMs}ms');
+  if (bodyBytes != null) meta.add('$bodyBytes bytes');
+  return meta.join(' ');
+}
+
 /// Adds [infoResponse] for logging an HTTP response alongside a message.
 extension LoggerHttp on Logger {
   /// Logs [message] at [Level.INFO], appending a formatted [response] on
@@ -102,6 +111,7 @@ extension LoggerHttp on Logger {
     int? bodyBytes,
     int? maxStringLen = 100,
     bool logHeader = true,
-  }) =>
-      info('$message\n${prettyResponse(response, elapsedMs: elapsedMs, bodyBytes: bodyBytes, maxStringLen: maxStringLen, logHeader: logHeader)}');
+  }) => info(
+    '$message\n${prettyResponse(response, elapsedMs: elapsedMs, bodyBytes: bodyBytes, maxStringLen: maxStringLen, logHeader: logHeader)}',
+  );
 }
