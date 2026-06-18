@@ -5,23 +5,23 @@ import 'package:test/test.dart';
 void main() {
   group('prettyResponse', () {
     http.Response responseWith(http.BaseRequest request) => http.Response(
-          '{"ok":true}',
-          200,
-          headers: {'content-type': 'application/json'},
-          reasonPhrase: 'OK',
-          request: request,
-        );
+      '{"ok":true}',
+      200,
+      headers: {'content-type': 'application/json'},
+      reasonPhrase: 'OK',
+      request: request,
+    );
 
     test('renders status line, request line and bodies', () {
       final req = http.Request('POST', Uri.parse('https://example.com/api'))
         ..headers['accept'] = 'application/json'
         ..body = '{"name":"foo"}';
 
-      final out = prettyResponse(responseWith(req),
-          elapsedMs: 12, bodyBytes: 11);
-      
-
-      print(out);
+      final out = prettyResponse(
+        responseWith(req),
+        elapsedMs: 12,
+        bodyBytes: 11,
+      );
 
       expect(out, contains('POST https://example.com/api'));
       expect(out, contains('200 OK'));
@@ -48,10 +48,10 @@ void main() {
       final req = http.Request('POST', Uri.parse('https://example.com/api'))
         ..body = '{"img":"${'A' * 300}"}';
 
-      final out = prettyResponse(responseWith(req), maxStringLen: 100);
+      final out = prettyResponse(responseWith(req), maxStringLen: 50);
 
-      expect(out, contains('…<200 chars omitted>'));
-      expect(out, isNot(contains('A' * 101)));
+      expect(out, contains('…<250 chars omitted>'));
+      expect(out, isNot(contains('A' * 51)));
     });
 
     test('maxStringLen: null keeps the full body', () {

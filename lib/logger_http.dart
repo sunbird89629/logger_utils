@@ -40,16 +40,20 @@ String prettyResponse(
   bool logHeader = true,
 }) {
   final buf = StringBuffer();
-  // Status line
-  final request=response.request;
-  if(request!=null){
+
+  // Request line
+  final request = response.request;
+  if (request != null) {
     buf.writeln('${request.method} ${request.url}');
   }
 
-  buf.writeln(_statusLine(response, elapsedMs: elapsedMs, bodyBytes: bodyBytes));
+  // Status line
+  buf.writeln(
+    _statusLine(response, elapsedMs: elapsedMs, bodyBytes: bodyBytes),
+  );
 
-  // Request line + headers + body
-  if ( request != null) {
+  // Request headers + body
+  if (request != null) {
     if (logHeader && request.headers.isNotEmpty) {
       buf.writeln();
       request.headers.forEach((k, v) {
@@ -88,8 +92,9 @@ String prettyResponse(
 ///
 /// [elapsedMs] and [bodyBytes] are appended in parentheses when present.
 String _statusLine(http.Response response, {int? elapsedMs, int? bodyBytes}) {
-  final line =
-      StringBuffer('${response.statusCode} ${response.reasonPhrase ?? ''}');
+  final line = StringBuffer(
+    '${response.statusCode} ${response.reasonPhrase ?? ''}',
+  );
   final meta = <String>[];
   if (elapsedMs != null) meta.add('${elapsedMs}ms');
   if (bodyBytes != null) meta.add('$bodyBytes bytes');
@@ -112,7 +117,10 @@ extension LoggerHttp on Logger {
     int? bodyBytes,
     int? maxStringLen = 100,
     bool logHeader = true,
-  }) => info(
-    '$message\n${prettyResponse(response, elapsedMs: elapsedMs, bodyBytes: bodyBytes, maxStringLen: maxStringLen, logHeader: logHeader)}',
-  );
+  }) {
+    if (!isLoggable(Level.INFO)) return;
+    info(
+      '$message\n${prettyResponse(response, elapsedMs: elapsedMs, bodyBytes: bodyBytes, maxStringLen: maxStringLen, logHeader: logHeader)}',
+    );
+  }
 }

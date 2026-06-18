@@ -60,6 +60,8 @@ String _truncate(String s, int maxLen) {
 extension LoggerJson on Logger {
   /// Logs [message] at [Level.INFO], appending [payload] as indented JSON on
   /// the next line. [payload] may be a JSON-encodable object or a JSON string.
-  void infoJson(String message, Object? payload) =>
-      info('$message\n${prettyJson(payload)}');
+  void infoJson(String message, Object? payload) {
+    if (!isLoggable(Level.INFO)) return;
+    info('$message\n${prettyJson(payload)}');
+  }
 }
