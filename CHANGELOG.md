@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0
+## 0.0.1
 
 - Initial release: extracted as a standalone library.
 - Console + daily-rotated file logging via `initLogging({logsDir, filePrefix})`.
