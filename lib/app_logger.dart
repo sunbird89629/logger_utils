@@ -117,3 +117,5 @@ String _dateStamp(DateTime t) {
   String two(int n) => n.toString().padLeft(2, '0');
   return '${t.year}-${two(t.month)}-${two(t.day)}';
 }
+
+final devLogger = Logger('devLogger');
