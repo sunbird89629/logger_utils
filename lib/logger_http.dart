@@ -28,10 +28,13 @@ import 'logger_json.dart' show prettyJson;
 /// - The body is run through [prettyJson] so JSON responses are re-indented
 ///   and non-JSON bodies are returned as-is.
 /// - [elapsedMs] and [bodyBytes] are optional metadata shown on the status line.
+/// - [maxStringLen] caps long string values in both bodies (defaults to 2000)
+///   so base64 blobs don't flood the log; pass `null` to disable truncation.
 String prettyResponse(
   http.Response response, {
   int? elapsedMs,
   int? bodyBytes,
+  int? maxStringLen = 200,
 }) {
   final buf = StringBuffer();
 
@@ -49,7 +52,7 @@ String prettyResponse(
     if (request is http.Request && request.body.isNotEmpty) {
       buf.writeln();
       buf.writeln();
-      buf.write(prettyJson(request.body));
+      buf.write(prettyJson(request.body, maxStringLen: maxStringLen));
     }
     buf.writeln();
     buf.writeln();
@@ -75,7 +78,7 @@ String prettyResponse(
   if (body.isNotEmpty) {
     buf.writeln();
     buf.writeln();
-    buf.write(prettyJson(body));
+    buf.write(prettyJson(body, maxStringLen: maxStringLen));
   }
 
   return buf.toString();
@@ -86,12 +89,14 @@ extension LoggerHttp on Logger {
   /// Logs [message] at [Level.INFO], appending a formatted [response] on
   /// subsequent lines (status, headers, and pretty-printed body).
   ///
-  /// Optionally include [elapsedMs] and [bodyBytes] in the status line.
+  /// Optionally include [elapsedMs] and [bodyBytes] in the status line, and
+  /// cap long string values via [maxStringLen] (see [prettyResponse]).
   void infoResponse(
     String message,
     http.Response response, {
     int? elapsedMs,
     int? bodyBytes,
+    int? maxStringLen = 2000,
   }) =>
-      info('$message\n${prettyResponse(response, elapsedMs: elapsedMs, bodyBytes: bodyBytes)}');
+      info('$message\n${prettyResponse(response, elapsedMs: elapsedMs, bodyBytes: bodyBytes, maxStringLen: maxStringLen)}');
 }
