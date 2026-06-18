@@ -10,6 +10,10 @@ import 'logger_json.dart' show prettyJson;
 ///
 /// Format:
 /// ```
+/// GET https://example.com/api
+///   accept: application/json
+///   ...
+///
 /// 200 OK (123ms, 456 bytes)
 ///   content-type: application/json
 ///   ...
@@ -17,7 +21,10 @@ import 'logger_json.dart' show prettyJson;
 /// <pretty-printed JSON body, or plain text if not JSON>
 /// ```
 ///
-/// - Headers are indented.
+/// - The originating request (method, URL, headers, body) is printed first
+///   when available via [http.Response.request]; headers are indented and the
+///   body is shown only for [http.Request] (streamed/multipart have none).
+/// - Response headers are indented.
 /// - The body is run through [prettyJson] so JSON responses are re-indented
 ///   and non-JSON bodies are returned as-is.
 /// - [elapsedMs] and [bodyBytes] are optional metadata shown on the status line.
@@ -27,6 +34,26 @@ String prettyResponse(
   int? bodyBytes,
 }) {
   final buf = StringBuffer();
+
+  // Request line + headers + body
+  final request = response.request;
+  if (request != null) {
+    buf.write('${request.method} ${request.url}');
+    if (request.headers.isNotEmpty) {
+      buf.writeln();
+      request.headers.forEach((k, v) {
+        buf.writeln('  $k: $v');
+      });
+    }
+    // Only http.Request carries a readable body; streamed/multipart do not.
+    if (request is http.Request && request.body.isNotEmpty) {
+      buf.writeln();
+      buf.writeln();
+      buf.write(prettyJson(request.body));
+    }
+    buf.writeln();
+    buf.writeln();
+  }
 
   // Status line
   buf.write('${response.statusCode} ${response.reasonPhrase ?? ''}');
